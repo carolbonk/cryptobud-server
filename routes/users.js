@@ -16,9 +16,12 @@ router.post('/register', (req, res) => {
     const { first_name, last_name, email, password, avatar, city, country, avatar_file_type} = req.body;
 
     if (!first_name || !last_name || !email || !password || !avatar || !avatar_file_type || !city || !country) {
+
+       
         return res.status(400).send("Please enter the required fields.");
     }
 
+    console.log(avatar);
     let binaryData = Buffer.from(avatar, 'base64').toString('binary');
 
     let fileName= crypto.randomUUID() + "." + avatar_file_type;
