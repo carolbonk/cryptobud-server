@@ -10,14 +10,16 @@ const knex = require('knex')(require('../knexfile'));
 router.get ('/', (req, res) => {
     const authToken = req.headers.authorization.split(" ")[1];
     jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
-        
+
         if (err) {
             console.log(err);
             return res.status(401).send("Invalid auth token");
         }
-
-      knex('post')
+       
+      knex('post').join('user', 'user.id', 'post.user_id') 
        .where({ global: true })
+       .select( '', 'post.message', 'post.user_id', 'post.id', 'post.date', 'post.global', 
+        'post.image_url', 'user.first_name', 'user.last_name', 'user.avatar_url')
        .then((posts) => {
         res.status(201).send(posts);
     }
