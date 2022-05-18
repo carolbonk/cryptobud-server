@@ -16,12 +16,26 @@ router.get ('/', (req, res) => {
             return res.status(401).send("Invalid auth token");
         }
        
-      knex('post').join('user', 'user.id', 'post.user_id') 
+        console.log("to " + req.query.to);
+
+      knex('post').join('user', 'post.user_id', 'user.id') 
        .where({ global: true })
-       .select( '', 'post.message', 'post.user_id', 'post.id', 'post.date', 'post.global', 
+       .select('post.message', 'post.user_id', 'post.id', 'post.date', 'post.global', 
         'post.image_url', 'user.first_name', 'user.last_name', 'user.avatar_url')
+       .orderBy('date', 'desc')
+       .limit(req.query.to)
+       .offset(req.query.from)
        .then((posts) => {
-        res.status(201).send(posts);
+
+        knex('post').count().then((count) => {
+            console.log(count);
+            console.log(count[0]['count(*)']);
+          let data = {
+               posts: posts,
+               numberOfPosts: count[0]['count(*)']
+              } ;
+        res.status(201).send(data);
+        });
     }
     );
 });
