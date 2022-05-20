@@ -91,6 +91,36 @@ router.post('/login', (req, res) => {
 });
 
 
+
+router.get('/id/:user_id', (req, res) => {
+
+    const { user_id } = req.params;
+    // If there is no auth header provided
+    if (!req.headers.authorization) {
+        return res.status(401).send("Please login");
+    }
+    console.log("Auth token " + req.headers.authorization);
+    // Parse the Bearer token
+    const authToken = req.headers.authorization.split(" ")[1];
+    console.log("Auth token after split " + authToken);
+    // Verify the token
+    jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+        if (err) {
+            console.log(err);
+            return res.status(401).send("Invalid auth token");
+        }
+
+        knex('user')
+            .where({ id: user_id })
+            .first()
+            .then((user) => {
+                // Respond with the user data
+                delete user.password;
+                res.json(user);
+            });
+    });
+});
+
 // ## GET /api/users/current
 // -   Gets information about the currently logged in user.
 // -   If no valid JWT is provided, this route will respond with 401 Unauthorized.

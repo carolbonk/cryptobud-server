@@ -17,9 +17,19 @@ router.get ('/', (req, res) => {
         }
        
         console.log("to " + req.query.to);
+      let where = null;
+
+      if (!req.query.user_id)
+      {
+        where = { global: true };
+      }
+      else
+      {
+          where = {user_id: req.query.user_id, global:true};
+      }
 
       knex('post').join('user', 'post.user_id', 'user.id') 
-       .where({ global: true })
+       .where(where)
        .select('post.message', 'post.user_id', 'post.id', 'post.date', 'post.global', 
         'post.image_url', 'user.first_name', 'user.last_name', 'user.avatar_url')
        .orderBy('date', 'desc')
@@ -27,15 +37,10 @@ router.get ('/', (req, res) => {
        .offset(req.query.from)
        .then((posts) => {
 
-        knex('post').count().then((count) => {
-            console.log(count);
-            console.log(count[0]['count(*)']);
           let data = {
-               posts: posts,
-               numberOfPosts: count[0]['count(*)']
+               posts: posts
               } ;
         res.status(201).send(data);
-        });
     }
     );
 });
