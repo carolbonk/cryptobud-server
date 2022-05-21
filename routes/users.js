@@ -5,9 +5,71 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require("fs");
 const crypto = require("crypto");
+const { decode } = require('punycode');
 
 
+router.post('/:user_id/follow', (req, res) => {
+    const { user_id } = req.params;
 
+    if (!user_id) {
+        return res.status(400).send("Please enter the required fields.");
+    }
+    if (!req.headers.authorization) {
+        return res.status(401).send("Please login");
+    }
+
+    const authToken = req.headers.authorization.split(" ")[1];
+    
+    // Verify the token
+    jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+
+    let friend = {
+        primary_user_id: decoded.id,
+        secondary_user_id: user_id
+    };
+
+    knex('following')
+        .insert(friend)
+        .then(() => {
+            res.status(201).send("Added friend successfully");
+        })
+        .catch((error) => {
+            res.status(400).send("Failed");
+            console.log(error);
+        });
+    });
+
+});
+
+router.delete('/:user_id/follow', (req, res) => {
+    const { user_id } = req.params;
+
+    if (!user_id) {
+        return res.status(400).send("Please enter the required fields.");
+    }
+    if (!req.headers.authorization) {
+        return res.status(401).send("Please login");
+    }
+
+    const authToken = req.headers.authorization.split(" ")[1];
+    
+    // Verify the token
+    jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+
+
+    knex('following')
+        .where({ primary_user_id: decoded.id,
+            secondary_user_id: user_id}).del()
+        .then(() => {
+            res.status(201).send("Removed friend successfully");
+        })
+        .catch((error) => {
+            res.status(400).send("Failed");
+            console.log(error);
+        });
+    });
+
+});
 
 
 // ## POST /api/users/register
@@ -99,6 +161,11 @@ router.get('/id/:user_id', (req, res) => {
     if (!req.headers.authorization) {
         return res.status(401).send("Please login");
     }
+
+    if (!user_id) {
+        return res.status(400).send("Please enter the required fields.");
+    }
+
     console.log("Auth token " + req.headers.authorization);
     // Parse the Bearer token
     const authToken = req.headers.authorization.split(" ")[1];
@@ -115,10 +182,21 @@ router.get('/id/:user_id', (req, res) => {
             .first()
             .then((user) => {
                 // Respond with the user data
+                if (!user){
+                    return res.status(401).send("Invalid user");
+                }
                 delete user.password;
-                res.json(user);
-            });
+                knex('following')
+                .where({ secondary_user_id: user_id, 
+                    primary_user_id: decoded.id})
+                .count()
+                .then((count) => {
+                    console.log(count);
+                    user.isFriend = count[0]['count(*)'] < 1? false : true;
+                    res.json(user);
+                });
     });
+});
 });
 
 // ## GET /api/users/current

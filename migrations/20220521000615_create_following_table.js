@@ -2,9 +2,9 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function(knex) {
+ exports.up = function(knex) {
 
-    return knex.schema.createTable("friend", (table) => {
+    return knex.schema.createTable("following", (table) => {
     table.increments("id");
     table.integer("primary_user_id").unsigned().notNullable();
     table.integer("secondary_user_id").unsigned().notNullable();
@@ -28,5 +28,5 @@ exports.up = function(knex) {
  * @returns { Promise<void> }
  */
 exports.down = function(knex) {
-    return knex.schema.dropTable("post");
+    return knex.schema.dropTable("following");
 };
