@@ -24,8 +24,8 @@ router.get("/", (req, res) => {
       orWhereTwo = { global: false, user_id: decoded.id };
 
       knex("post")
-        .join("user", "post.user_id", "user.id")
-        .join("following", "post.user_id", "following.secondary_user_id")
+        .leftJoin("user", "post.user_id", "user.id")
+        .leftJoin("following", "post.user_id", "following.secondary_user_id")
         .where(where)
         .orWhere(orWhere)
         .orWhere(orWhereTwo)
@@ -62,8 +62,8 @@ router.get("/", (req, res) => {
       };
 
       knex("post")
-      .join("user", "post.user_id", "user.id")
-      .join("following", "post.user_id", "following.secondary_user_id")
+      .leftJoin("user", "post.user_id", "user.id")
+      .leftJoin("following", "post.user_id", "following.secondary_user_id")
       .where(where)
       .orWhere(orWhere)
       .select(
