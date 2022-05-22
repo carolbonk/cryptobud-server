@@ -36,6 +36,9 @@ router.get("/", (req, res) => {
           "post.date",
           "post.global",
           "post.image_url",
+          "post.coin",
+          "post.start_date",
+          "post.end_date",
           "user.first_name",
           "user.last_name",
           "user.avatar_url"
@@ -70,6 +73,9 @@ router.get("/", (req, res) => {
         "post.date",
         "post.global",
         "post.image_url",
+        "post.coin",
+        "post.start_date",
+        "post.end_date",
         "user.first_name",
         "user.last_name",
         "user.avatar_url"
@@ -95,7 +101,7 @@ router.post("/", (req, res) => {
       console.log(err);
       return res.status(401).send("Invalid auth token");
     }
-    const { message, global, image, image_type } = req.body;
+    const { message, global, image, image_type, coin, start_date, end_date } = req.body;
     const user_id = decoded.id;
 
     if (global == null) {
@@ -118,18 +124,28 @@ router.post("/", (req, res) => {
       let urlPrefix =
         process.env.BACKEND_URL + ":" + process.env.PORT + "/images/";
 
+    
       newPost = {
         message: message,
         user_id: user_id,
         image_url: (urlPrefix + fileName),
         global: global,
       };
+
+
     } else {
       newPost = {
         message: message,
         user_id: user_id,
         global: global,
       };
+    }
+
+    if (!!coin)
+    {
+    newPost.coin = coin;
+    newPost.start_date = new Date(start_date);
+    newPost.end_date = new Date(end_date);
     }
       // Create the new post
 
