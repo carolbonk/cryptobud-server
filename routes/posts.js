@@ -121,7 +121,7 @@ router.post("/", (req, res) => {
       newPost = {
         message: message,
         user_id: user_id,
-        image_url: urlPrefix + fileName,
+        image_url: (urlPrefix + fileName),
         global: global,
       };
     } else {
@@ -130,7 +130,7 @@ router.post("/", (req, res) => {
         user_id: user_id,
         global: global,
       };
-
+    }
       // Create the new post
 
       knex("post")
@@ -142,7 +142,7 @@ router.post("/", (req, res) => {
           res.status(400).send("Failed posting");
           console.log(error);
         });
-    }
+    
   });
 });
 
