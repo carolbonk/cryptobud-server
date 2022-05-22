@@ -94,6 +94,105 @@ router.get("/", (req, res) => {
   });
 });
 
+
+router.post("/:post_id/comments", (req, res) => {
+    const authToken = req.headers.authorization.split(" ")[1];
+    jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+      if (err) {
+        console.log(err);
+        return res.status(401).send("Invalid auth token");
+      }
+      const { post_id } = req.params;
+      const { message } = req.body;
+      const user_id = decoded.id;
+  
+      if (!message || !post_id) 
+      {
+        return res.status(400).send("Please enter the required fields.");
+      }
+        // Create the new post
+       let newComment = {
+           message: message,
+           post_id: post_id,
+           user_id: user_id
+       };
+
+        knex("comment")
+          .insert(newComment)
+          .then(() => {
+            res.status(201).send("Posted successfully");
+          })
+          .catch((error) => {
+            res.status(400).send("Failed posting");
+            console.log(error);
+          });
+      
+    });
+  });
+
+
+  router.get("/:post_id/comments", (req, res) => {
+    const authToken = req.headers.authorization.split(" ")[1];
+    jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+      if (err) {
+        console.log(err);
+        return res.status(401).send("Invalid auth token");
+      }
+  
+      const { post_id } = req.params;
+      console.log("to " + req.query.to);
+      let where = null;
+      let orWhere = null;
+      let orWhereTwo = null;
+    
+        where = { global: true, "post.id": post_id };
+        orWhere = { global: false, primary_user_id: decoded.id, "post.id": post_id  };
+        orWhereTwo = { global: false, "post.user_id": decoded.id, "post.id": post_id  };
+  
+        knex("post")
+          .leftJoin("user", "post.user_id", "user.id")
+          .leftJoin("following", "post.user_id", "following.secondary_user_id")
+          .leftJoin("comment", "post.id", "comment.post_id")
+          .leftJoin("user as commentUser", "comment.user_id", "commentUser.id")
+          .where(where)
+          .orWhere(orWhere)
+          .orWhere(orWhereTwo)
+          .select(
+            "post.message as postMessage",
+            "post.user_id as postUserId",
+            "post.id as postId",
+            "post.date as postDate",
+            "post.global as postGlobal",
+            "post.image_url as postImageURL",
+            "post.coin as postCoin",
+            "post.start_date as postStartDate",
+            "post.end_date as postEndDate",
+            "user.first_name as postFirstName",
+            "user.last_name as postLastName",
+            "user.avatar_url as postAvatarUrl",
+            "comment.message",
+            "comment.id",
+            "comment.user_id",
+            "comment.date",
+            "commentUser.first_name",
+            "commentUser.last_name",
+            "commentUser.avatar_url"
+          )
+          .orderBy("date", "desc")
+          .distinct("comment.id")
+          .then((posts) => {
+            let data = {
+              posts: posts,
+            };
+            res.status(201).send(data);
+          });
+      
+    
+   
+  }); });
+  
+
+
 router.post("/", (req, res) => {
   const authToken = req.headers.authorization.split(" ")[1];
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
