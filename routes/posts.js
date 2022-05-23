@@ -261,4 +261,123 @@ router.post("/", (req, res) => {
   });
 });
 
+router.post("/:post_id/likes", (req, res) => {
+    const authToken = req.headers.authorization.split(" ")[1];
+    jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+      if (err) {
+        console.log(err);
+        return res.status(401).send("Invalid auth token");
+      }
+      const { post_id } = req.params;
+      const { type } = req.body;
+      const user_id = decoded.id;
+  
+      if (!type|| !post_id) 
+      {
+        return res.status(400).send("Please enter the required fields.");
+      }
+        // Create the new post
+       let newLike = {
+           type: type,
+           post_id: post_id,
+           user_id: user_id
+       };
+
+        knex("likes")
+          .insert(newLike)
+          .then(() => {
+            res.status(201).send("Posted successfully");
+          })
+          .catch((error) => {
+            res.status(400).send("Failed posting");
+            console.log(error);
+          });
+      
+    });
+  });
+
+  router.get("/:post_id/likes", (req, res) => {
+    const authToken = req.headers.authorization.split(" ")[1];
+    jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+      if (err) {
+        console.log(err);
+        return res.status(401).send("Invalid auth token");
+      }
+  
+      const { post_id } = req.params;
+      
+      let where = null;
+      let orWhere = null;
+      let orWhereTwo = null;
+    
+        where = { global: true, "post.id": post_id };
+        orWhere = { global: false, primary_user_id: decoded.id, "post.id": post_id  };
+        orWhereTwo = { global: false, "post.user_id": decoded.id, "post.id": post_id  };
+  
+        knex("post")
+          .leftJoin("user", "post.user_id", "user.id")
+          .leftJoin("following", "post.user_id", "following.secondary_user_id")
+          .leftJoin("likes", "post.id", "likes.post_id")
+          .join("user as likesUser", "likes.user_id", "likesUser.id")
+          .where(where)
+          .orWhere(orWhere)
+          .orWhere(orWhereTwo)
+          .select(
+            "post.message as postMessage",
+            "post.user_id as postUserId",
+            "post.id as postId",
+            "post.date as postDate",
+            "post.global as postGlobal",
+            "post.image_url as postImageURL",
+            "post.coin as postCoin",
+            "post.start_date as postStartDate",
+            "post.end_date as postEndDate",
+            "user.first_name as postFirstName",
+            "user.last_name as postLastName",
+            "user.avatar_url as postAvatarUrl",
+            "likes.id",
+            "likes.user_id",
+            "likes.type"
+          )
+          .distinct("likes.id")
+          .then((likes) => {
+
+            let hodlCounter = 0;
+            let dumpCounter = 0;
+            let userHasInteracted = false;
+            let userLikeType = null;
+
+            likes.forEach(like => {
+
+                if (like.user_id == decoded.id)
+                {
+                    userHasInteracted = true;
+                    userLikeType = like.type;
+                }
+
+                if (like.type == "hodl")
+                {
+                    hodlCounter++;
+                }
+                else if (like.type == "dump")
+                {
+                    dumpCounter++;
+                }
+            }
+
+            );
+
+            let data = {
+              dumpCounter: dumpCounter,
+              hodlCounter: hodlCounter,  
+              userHasInteracted: userHasInteracted,
+              userLikeType: userLikeType
+            };
+            res.status(201).send(data);
+          });
+      
+    
+   
+  }); });
+
 module.exports = router;
