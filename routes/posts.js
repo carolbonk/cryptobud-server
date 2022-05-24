@@ -296,6 +296,37 @@ router.post("/:post_id/likes", (req, res) => {
     });
   });
 
+  router.delete("/:post_id/likes", (req, res) => {
+    const authToken = req.headers.authorization.split(" ")[1];
+    jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+      if (err) {
+        console.log(err);
+        return res.status(401).send("Invalid auth token");
+      }
+      const { post_id } = req.params;
+      const user_id = decoded.id;
+  
+      if (!post_id) 
+      {
+        return res.status(400).send("Please enter the required fields.");
+      }
+        // Create the new post
+  
+        knex("likes")
+          .delete()
+          .where({post_id: post_id,
+                  user_id: user_id})
+          .then(() => {
+            res.status(201).send("Deleted successfully");
+          })
+          .catch((error) => {
+            res.status(400).send("Failed deletion");
+            console.log(error);
+          });
+      
+    });
+  });
+
   router.get("/:post_id/likes", (req, res) => {
     const authToken = req.headers.authorization.split(" ")[1];
     jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
