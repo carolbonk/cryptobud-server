@@ -153,7 +153,8 @@ router.post("/login", (req, res) => {
 
       res.json({ token });
     })
-    .catch(() => {
+    .catch((err) => {
+      console.log(err);
       res.status(400).send("Invalid credentials");
     });
 });
