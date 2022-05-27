@@ -3,7 +3,7 @@ require('dotenv').config();
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
- module.exports = {
+const connections = {
   client: 'mysql',
   connection: {
     host: process.env.DB_HOST,
@@ -17,4 +17,8 @@ require('dotenv').config();
   },
 };
 
+module.exports = 
+  process.env.NODE_ENV === 'production'
+    ? connections.production
+    : connections.development;
 
