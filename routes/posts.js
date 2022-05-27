@@ -221,7 +221,7 @@ router.post("/", (req, res) => {
       fs.writeFileSync("public/images/" + fileName, binaryData, "binary");
 
       let urlPrefix =
-        process.env.BACKEND_URL + ":" + process.env.PORT + "/images/";
+        process.env.BACKEND_URL + "/images/";
 
       newPost = {
         message: message,

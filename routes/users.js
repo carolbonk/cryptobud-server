@@ -97,7 +97,7 @@ router.post("/register", (req, res) => {
   let fileName = crypto.randomUUID() + "." + avatar_file_type;
   fs.writeFileSync("public/images/" + fileName, binaryData, "binary");
 
-  let urlPrefix = process.env.BACKEND_URL + ":" + process.env.PORT + "/images/";
+  let urlPrefix = process.env.BACKEND_URL + "/images/";
   const hashedPassword = bcrypt.hashSync(password, 12);
 
   // Create the new user
