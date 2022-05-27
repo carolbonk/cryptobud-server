@@ -3,7 +3,7 @@ require('dotenv').config();
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-const connections = {
+const connections = {development: {
   client: 'mysql',
   connection: {
     host: process.env.DB_HOST,
@@ -15,6 +15,7 @@ const connections = {
     client: 'mysql',
     connection: process.env.JAWSDB_URL,
   },
+}
 };
 
 module.exports = 
