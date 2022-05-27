@@ -10,12 +10,12 @@ const connections = {development: {
     database: process.env.DB_NAME,
     user:     process.env.DB_USER,
     password: process.env.DB_PASS
-  },
+  }},
   production: {
     client: 'mysql',
     connection: process.env.JAWSDB_URL,
   },
-}
+
 };
 
 module.exports = 
