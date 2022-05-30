@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const { response } = require("express");
 const jwt = require("jsonwebtoken");
 const knex = require("knex")(require("../knexfile"));
+const cloudinary = require('cloudinary').v2
 
 router.get("/", (req, res) => {
   const authToken = req.headers.authorization.split(" ")[1];
@@ -218,24 +219,46 @@ router.post("/", (req, res) => {
 
       let fileName = crypto.randomUUID() + "." + image_type;
 
+    
+
       fs.writeFileSync("public/images/" + fileName, binaryData, "binary");
 
-      let urlPrefix =
-        process.env.BACKEND_URL + "/images/";
+      let imageRoute = "public/images/" + fileName;
 
-      newPost = {
+        cloudinary.uploader.upload(imageRoute, {}, (error, result)=>{
+          
+           newPost = {
         message: message,
         user_id: user_id,
-        image_url: urlPrefix + fileName,
+        image_url: result.url,
         global: global,
       };
-    } else {
-      newPost = {
-        message: message,
-        user_id: user_id,
-        global: global,
-      };
+
+      if (!!coin) {
+      newPost.coin = coin;
+      newPost.start_date = new Date(start_date);
+      newPost.end_date = new Date(end_date);
     }
+    // Create the new post
+
+    knex("post")
+      .insert(newPost)
+      .then(() => {
+        res.status(201).send("Posted successfully");
+      })
+      .catch((error) => {
+        res.status(400).send("Failed posting");
+        console.log(error);
+      });
+});            
+}
+  else {
+      newPost = {
+        message: message,
+        user_id: user_id,
+        global: global,
+      };
+    
 
     if (!!coin) {
       newPost.coin = coin;
@@ -253,7 +276,10 @@ router.post("/", (req, res) => {
         res.status(400).send("Failed posting");
         console.log(error);
       });
+
+    }
   });
+
 });
 
 router.post("/:post_id/likes", (req, res) => {

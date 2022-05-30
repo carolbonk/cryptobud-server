@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const crypto = require("crypto");
 const { decode } = require("punycode");
+const cloudinary = require('cloudinary').v2
 
 router.post("/:user_id/follow", (req, res) => {
   const { user_id } = req.params;
@@ -97,7 +98,10 @@ router.post("/register", (req, res) => {
   let fileName = crypto.randomUUID() + "." + avatar_file_type;
   fs.writeFileSync("public/images/" + fileName, binaryData, "binary");
 
-  let urlPrefix = process.env.BACKEND_URL + "/images/";
+  let imageRoute = "public/images/" + fileName;
+
+    cloudinary.uploader.upload(imageRoute, {}, (error, result)=>{
+
   const hashedPassword = bcrypt.hashSync(password, 12);
 
   // Create the new user
@@ -106,7 +110,7 @@ router.post("/register", (req, res) => {
     last_name: last_name,
     email: email,
     password: hashedPassword,
-    avatar_url: urlPrefix + fileName,
+    avatar_url: result.url,
     city: city,
     country: country,
   };
@@ -120,7 +124,9 @@ router.post("/register", (req, res) => {
       res.status(400).send("Failed registration");
       console.log(error);
     });
+  });
 });
+
 
 // ## POST /api/users/login
 // -   Generates and responds a JWT for the user to use for future authorization.
