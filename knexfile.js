@@ -3,24 +3,38 @@ require('dotenv').config();
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-const connections = {development: {
-  client: 'mysql',
-  connection: {
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    user:     process.env.DB_USER,
-    password: process.env.DB_PASS,
+const connections = {
+  development: {
+    client: 'mysql2',
+    connection: {
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      port: process.env.DB_PORT || 24603,
+      ssl: process.env.DB_SSL === 'true' ? {
+        rejectUnauthorized: false
+      } : false
+    },
+    pool: {
+      min: 1,
+      max: 5
+    },
+    migrations: {
+      tableName: 'knex_migrations'
+    }
   },
-},
   production: {
-    client: 'mysql',
-    connection: process.env.JAWSDB_URL,
-  },
-
+    client: 'mysql2',
+    connection: process.env.DATABASE_URL,
+    pool: {
+      min: 1,
+      max: 5
+    },
+    migrations: {
+      tableName: 'knex_migrations'
+    }
+  }
 };
 
-module.exports = 
-  process.env.NODE_ENV === 'production'
-    ? connections.production
-    : connections.development;
-
+module.exports = connections;

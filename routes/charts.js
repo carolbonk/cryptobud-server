@@ -5,7 +5,11 @@ const crypto = require("crypto");
 const axios = require("axios");
 const { response } = require("express");
 const jwt = require("jsonwebtoken");
-const knex = require("knex")(require("../knexfile"));
+const knexConfig = require("../knexfile");
+const environment = process.env.NODE_ENV || "development";
+const dbConfig = knexConfig[environment];
+console.log("Knex config:", JSON.stringify(dbConfig, null, 2));
+const knex = require("knex")(dbConfig);
 
 router.get("/coins", (req, res) => {
     const authToken = req.headers.authorization.split(" ")[1];

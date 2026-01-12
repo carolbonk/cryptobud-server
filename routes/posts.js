@@ -4,8 +4,12 @@ const fs = require("fs");
 const crypto = require("crypto");
 const { response } = require("express");
 const jwt = require("jsonwebtoken");
-const knex = require("knex")(require("../knexfile"));
-const cloudinary = require('cloudinary').v2
+const knexConfig = require("../knexfile");
+const environment = process.env.NODE_ENV || "development";
+const dbConfig = knexConfig[environment];
+console.log("Knex config:", JSON.stringify(dbConfig, null, 2));
+const knex = require("knex")(dbConfig);
+const cloudinary = require("cloudinary").v2;
 
 router.get("/", (req, res) => {
   const authToken = req.headers.authorization.split(" ")[1];
