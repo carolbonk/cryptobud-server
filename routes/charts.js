@@ -12,8 +12,12 @@ console.log("Knex config:", JSON.stringify(dbConfig, null, 2));
 const knex = require("knex")(dbConfig);
 
 router.get("/coins", (req, res) => {
+    if (!req.headers.authorization) {
+      return res.status(401).send("Please login");
+    }
+
     const authToken = req.headers.authorization.split(" ")[1];
-  jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => { 
+  jwt.verify(authToken, process.env.JWT_KEY, (err, _decoded) => {
 
     if (err) {
         console.log(err);
@@ -51,8 +55,12 @@ router.get("/coins", (req, res) => {
 })
 
 router.get("/:coinId/history", (req, res) => {
+    if (!req.headers.authorization) {
+      return res.status(401).send("Please login");
+    }
+
     const authToken = req.headers.authorization.split(" ")[1];
-  jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => { 
+  jwt.verify(authToken, process.env.JWT_KEY, (err, _decoded) => {
     const { coinId } = req.params;
     if (err) {
         console.log(err);
