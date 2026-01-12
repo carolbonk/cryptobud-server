@@ -12,6 +12,9 @@ const knex = require("knex")(dbConfig);
 const cloudinary = require("cloudinary").v2;
 
 router.get("/", (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(401).send("Please login");
+  }
   const authToken = req.headers.authorization.split(" ")[1];
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
@@ -99,6 +102,9 @@ router.get("/", (req, res) => {
 });
 
 router.post("/:post_id/comments", (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(401).send("Please login");
+  }
   const authToken = req.headers.authorization.split(" ")[1];
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
@@ -132,6 +138,9 @@ router.post("/:post_id/comments", (req, res) => {
 });
 
 router.get("/:post_id/comments", (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(401).send("Please login");
+  }
   const authToken = req.headers.authorization.split(" ")[1];
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
@@ -198,6 +207,9 @@ router.get("/:post_id/comments", (req, res) => {
 });
 
 router.post("/", (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(401).send("Please login");
+  }
   const authToken = req.headers.authorization.split(" ")[1];
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
@@ -287,6 +299,9 @@ router.post("/", (req, res) => {
 });
 
 router.post("/:post_id/likes", (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(401).send("Please login");
+  }
   const authToken = req.headers.authorization.split(" ")[1];
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
@@ -320,6 +335,9 @@ router.post("/:post_id/likes", (req, res) => {
 });
 
 router.delete("/:post_id/likes", (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(401).send("Please login");
+  }
   const authToken = req.headers.authorization.split(" ")[1];
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
@@ -348,6 +366,9 @@ router.delete("/:post_id/likes", (req, res) => {
 });
 
 router.get("/:post_id/likes", (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(401).send("Please login");
+  }
   const authToken = req.headers.authorization.split(" ")[1];
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
