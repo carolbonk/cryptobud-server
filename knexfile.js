@@ -22,17 +22,23 @@ const connections = {
     },
     migrations: {
       tableName: 'knex_migrations'
+    },
+    seeds: {
+      directory: './seeds'
     }
   },
   production: {
     client: 'mysql2',
-    connection: process.env.DATABASE_URL,
+    connection: process.env.DATABASE_URL || process.env.DATABASE_URI,
     pool: {
       min: 1,
       max: 5
     },
     migrations: {
       tableName: 'knex_migrations'
+    },
+    seeds: {
+      directory: './seeds'
     }
   }
 };
