@@ -1,6 +1,6 @@
 # Cryptobud Server Application
 
-This is the server application for the cryptobud social media. 
+This is the server application for the cryptobud social media. The goal was to create a robust and dynamic social media platform that meets user needs while offering a modern, user-friendly experience tailored to the cryptocurrency community, you can check more about the project here: https://www.carolbonk.com/Work/CryptoProject
 
 ## Architecture
 
