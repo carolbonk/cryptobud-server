@@ -10,7 +10,8 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const crypto = require("crypto");
 const { decode } = require("punycode");
-const cloudinary = require('cloudinary').v2
+const cloudinary = require('cloudinary').v2;
+const xss = require('xss')
 
 router.post("/:user_id/follow", (req, res) => {
   const { user_id } = req.params;
@@ -26,6 +27,11 @@ router.post("/:user_id/follow", (req, res) => {
 
   // Verify the token
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+    if (err) {
+      console.log(err);
+      return res.status(401).send("Invalid auth token");
+    }
+
     let friend = {
       primary_user_id: decoded.id,
       secondary_user_id: user_id,
@@ -57,6 +63,11 @@ router.delete("/:user_id/follow", (req, res) => {
 
   // Verify the token
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
+    if (err) {
+      console.log(err);
+      return res.status(401).send("Invalid auth token");
+    }
+
     knex("following")
       .where({ primary_user_id: decoded.id, secondary_user_id: user_id })
       .del()
@@ -97,9 +108,17 @@ router.post("/register", (req, res) => {
     return res.status(400).send("Please enter the required fields.");
   }
 
+  // Sanitize file type to prevent path traversal
+  const ALLOWED_IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  const sanitizedFileType = avatar_file_type.toLowerCase().replace(/[^a-z]/g, '');
+
+  if (!ALLOWED_IMAGE_TYPES.includes(sanitizedFileType)) {
+    return res.status(400).send("Invalid file type. Only jpg, jpeg, png, gif, and webp are allowed.");
+  }
+
   let binaryData = Buffer.from(avatar, "base64").toString("binary");
 
-  let fileName = crypto.randomUUID() + "." + avatar_file_type;
+  let fileName = crypto.randomUUID() + "." + sanitizedFileType;
   fs.writeFileSync("public/images/" + fileName, binaryData, "binary");
 
   let imageRoute = "public/images/" + fileName;
@@ -108,15 +127,15 @@ router.post("/register", (req, res) => {
 
   const hashedPassword = bcrypt.hashSync(password, 12);
 
-  // Create the new user
+  // Create the new user - sanitize inputs to prevent XSS
   const newUser = {
-    first_name: first_name,
-    last_name: last_name,
-    email: email,
+    first_name: xss(first_name),
+    last_name: xss(last_name),
+    email: xss(email),
     password: hashedPassword,
     avatar_url: result.url,
-    city: city,
-    country: country,
+    city: xss(city),
+    country: xss(country),
   };
 
   knex("user")
@@ -180,10 +199,8 @@ router.get("/id/:user_id", (req, res) => {
     return res.status(400).send("Please enter the required fields.");
   }
 
-  console.log("Auth token " + req.headers.authorization);
   // Parse the Bearer token
   const authToken = req.headers.authorization.split(" ")[1];
-  console.log("Auth token after split " + authToken);
   // Verify the token
   jwt.verify(authToken, process.env.JWT_KEY, (err, decoded) => {
     if (err) {

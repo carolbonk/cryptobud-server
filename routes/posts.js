@@ -10,6 +10,7 @@ const dbConfig = knexConfig[environment];
 console.log("Knex config:", JSON.stringify(dbConfig, null, 2));
 const knex = require("knex")(dbConfig);
 const cloudinary = require("cloudinary").v2;
+const xss = require('xss');
 
 router.get("/", (req, res) => {
   if (!req.headers.authorization) {
@@ -118,9 +119,9 @@ router.post("/:post_id/comments", (req, res) => {
     if (!message || !post_id) {
       return res.status(400).send("Please enter the required fields.");
     }
-    // Create the new post
+    // Create the new post - sanitize message to prevent XSS
     let newComment = {
-      message: message,
+      message: xss(message),
       post_id: post_id,
       user_id: user_id,
     };
@@ -231,20 +232,26 @@ router.post("/", (req, res) => {
 
     let newPost = null;
     if (!!image && !!image_type) {
+      // Sanitize file type to prevent path traversal
+      const ALLOWED_IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+      const sanitizedImageType = image_type.toLowerCase().replace(/[^a-z]/g, '');
+
+      if (!ALLOWED_IMAGE_TYPES.includes(sanitizedImageType)) {
+        return res.status(400).send("Invalid file type. Only jpg, jpeg, png, gif, and webp are allowed.");
+      }
+
       let binaryData = Buffer.from(image, "base64").toString("binary");
 
-      let fileName = crypto.randomUUID() + "." + image_type;
-
-    
+      let fileName = crypto.randomUUID() + "." + sanitizedImageType;
 
       fs.writeFileSync("public/images/" + fileName, binaryData, "binary");
 
       let imageRoute = "public/images/" + fileName;
 
         cloudinary.uploader.upload(imageRoute, {}, (error, result)=>{
-          
+
            newPost = {
-        message: message,
+        message: xss(message),
         user_id: user_id,
         image_url: result.url,
         global: global,
@@ -270,7 +277,7 @@ router.post("/", (req, res) => {
 }
   else {
       newPost = {
-        message: message,
+        message: xss(message),
         user_id: user_id,
         global: global,
       };
